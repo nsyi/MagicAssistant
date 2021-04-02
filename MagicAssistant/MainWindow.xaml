@@ -1,0 +1,78 @@
+﻿<Window x:Class="MagicAssistant.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MagicAssistant"
+        mc:Ignorable="d"
+        Title="Magic Assist" Height="684" Width="970.375" Opacity="0.5" 
+        AllowsTransparency="True" WindowStyle="None" MouseDown="Window_MouseDown" 
+        Background="Black"
+        Topmost="True"
+        ResizeMode="CanResize"
+        >
+    <DockPanel LastChildFill="True">
+        <!--Top-->
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Foreground="Black" x:Name="xaml_top_left" VerticalAlignment="Top" Background="Yellow" 
+                   HorizontalContentAlignment="Left" Content="" Grid.Column="0"/>
+            <Label Foreground="Black" x:Name="xaml_top_right" VerticalAlignment="Top" Background="Yellow" 
+                   HorizontalContentAlignment="Right" Content="" Grid.Column="1"/>
+        </Grid>
+
+        <!--Bottom-->
+        <Grid DockPanel.Dock="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Foreground="White" x:Name="xaml_message" Grid.Column="0" Background="DarkRed" 
+                   HorizontalContentAlignment="Left" Content=""/>
+            <Label Foreground="White" Grid.Column="1" Background="DarkRed" HorizontalContentAlignment="Right" DockPanel.Dock="Bottom" Content="Magic Assistant Beta"/>
+        </Grid>
+        
+        <!--Middle content-->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <DockPanel LastChildFill="True" Grid.RowSpan="2">
+                <Label Content="Event Log" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <RichTextBox x:Name="xaml_events" Background="Transparent" Foreground="White" 
+                         Grid.Column="0" VerticalAlignment="Stretch" Block.LineHeight="2" Grid.RowSpan="2"/>
+            </DockPanel>
+            <DockPanel Grid.Column="0" Grid.Row="2" Grid.RowSpan="2" LastChildFill="True">
+                <Label Content="Game Objects" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_gameobjects" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow"/>
+            </DockPanel>
+            <DockPanel Grid.Column="1" LastChildFill="True">
+                <Label Content="Player Hand" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_player_hand" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            </DockPanel>
+            <DockPanel Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" LastChildFill="True">
+                <Label Content="Player Cards" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_player" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            </DockPanel>
+            <DockPanel Grid.Column="1" Grid.Row="3" LastChildFill="True">
+                <Label Content="Opponent Cards" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_opponent" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            </DockPanel>
+            <DockPanel Grid.Column="2" Grid.RowSpan="4" LastChildFill="True">
+                <Label Content="Log Message" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_log" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>
