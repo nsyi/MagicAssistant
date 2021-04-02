@@ -67,6 +67,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DataObject.cs" />
     <Compile Include="ExtraFunctions.cs" />
     <Compile Include="greTypes.cs" />
     <Compile Include="MainWindow.xaml.cs">

@@ -11,6 +11,11 @@ using System.Web.Script.Serialization;
 using System.Collections.Generic;
 using System.Windows.Documents;
 using static MagicAssistant.greTypes;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace MagicAssistant
 {
@@ -47,6 +52,18 @@ namespace MagicAssistant
             dataBaseJson = ReadDataBase(data_base_file, out dataBaseCards);
 
             //InterpretGreToClientEventMessage(play);
+
+            // Serial Test
+            DataObject obj = new DataObject();
+            obj.ID = 1;
+            obj.Name = ".Net";
+
+            XmlSerializer xmlSerializer = new XmlSerializer(obj.GetType());
+
+            StringWriter textWriter = new StringWriter();
+            xmlSerializer.Serialize(textWriter, obj);
+            string result = textWriter.ToString();
+            Console.WriteLine(result);
 
             SeekLogThreaded(log_path);
         }
