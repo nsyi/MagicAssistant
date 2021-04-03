@@ -54,15 +54,26 @@ namespace MagicAssistant
             //InterpretGreToClientEventMessage(play);
 
             // Serial Test
-            DataObject obj = new DataObject();
-            obj.ID = 1;
-            obj.Name = ".Net";
+            DataObject data = new DataObject();
+            data.ID = 1;
+            data.Name = ".Net";
+            data.Settings.General = 0;
+            data.Match.MatchSummary.Player = "player name";
 
-            XmlSerializer xmlSerializer = new XmlSerializer(obj.GetType());
+            MAGame game1 = new MAGame();
+            game1.gameName = "game 1";
+            game1.GameSummary.onPlay = false;
+            data.Match.MatchGames.Add(game1);
 
-            StringWriter textWriter = new StringWriter();
-            xmlSerializer.Serialize(textWriter, obj);
-            string result = textWriter.ToString();
+            MAGame game2 = new MAGame();
+            game2.gameName = "game 2";
+            game2.GameSummary.onPlay = true;
+            data.Match.MatchGames.Add(game2);
+
+            data.Match.MatchSnapShot.Player.name = "player name";
+            data.Match.MatchSnapShot.Opponent.name = "opponet name";
+
+            string result = data.SerializeObject();
             Console.WriteLine(result);
 
             SeekLogThreaded(log_path);
