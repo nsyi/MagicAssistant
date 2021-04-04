@@ -5,17 +5,11 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Web.Script.Serialization;
 using System.Collections.Generic;
 using System.Windows.Documents;
 using static MagicAssistant.greTypes;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace MagicAssistant
 {
@@ -24,46 +18,53 @@ namespace MagicAssistant
     /// </summary>
     public partial class MainWindow : Window
     {
-        long offset;
-        int nextByte;
         int message_count = 0;
         int error_count = 0;
-        string user_path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\AppData\\LocalLow\\Wizards Of The Coast\\MTGA\\";
-        string data_base_file = AppDomain.CurrentDomain.BaseDirectory + "\\database.json";
-        string log_file = "player.log";
+
+        readonly string user_path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\AppData\\LocalLow\\Wizards Of The Coast\\MTGA\\";
+        readonly string data_base_file = AppDomain.CurrentDomain.BaseDirectory + "\\database.json";
+        readonly string log_file = "player.log";
+        string test_log = "C:\\Users\\nsyig\\Documents\\My documents\\UW\\J017 - MTGA\\Player\\Player.log";
+
         JavaScriptSerializer jss = new JavaScriptSerializer();
-        string[] player_names = new string[2];
-        int[] player_life = new int[4];
+        readonly dynamic dataBaseJson; // Database of cards
+        Dictionary<int, dynamic> dataBaseCards;
+
+        public DataObject MainData = new DataObject(); // Main data file 
+
         EnumGameStage gameStage = EnumGameStage.GameStage_None;
         Dictionary<int, GameObjectClass> gameObjects = new Dictionary<int, GameObjectClass>();
-        dynamic dataBaseJson;
-        Dictionary<int, dynamic> dataBaseCards;
+
         Dictionary<int, int> Battlefield = new Dictionary<int, int>();
+
+
+        /// <summary>
+        /// Main Window Entry Code
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
 
             string log_path = user_path + log_file;
+            CheckFile(log_path); // Check if log exists
 
-            // Check if log exists
-            CheckFile(log_path);
-
-            // Read Data Base
-            dataBaseJson = ReadDataBase(data_base_file, out dataBaseCards);
+            dataBaseJson = ReadDataBase(data_base_file, out dataBaseCards); // Read Data Base
 
             //InterpretGreToClientEventMessage(play);
-
-            //Tests.SerializationTest();
-
+            //string json = Tests.SerializationTest();
+            //WriteLogText(xaml_json, json);
             //Tests.APITest("\"test\" : \"test\""); // Test the api
+            ReadTestLogThreaded(test_log);
 
-            //string test_log = "C:\\Users\\nsyig\\Documents\\My documents\\UW\\J017 - MTGA\\Player\\Player.log";
-            //ReadTestLog(test_log);
-
-            SeekLogThreaded(log_path);
+            //SeekLogThreaded(log_path);
         }
 
-
+        /// <summary>
+        /// Read the data base of cards
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="dataBaseCards"></param>
+        /// <returns></returns>
         dynamic ReadDataBase(string file, out Dictionary<int, object> dataBaseCards)
         {
             if (File.Exists(file))
@@ -86,6 +87,10 @@ namespace MagicAssistant
             }
         }
 
+        /// <summary>
+        /// Seek the log file threaded
+        /// </summary>
+        /// <param name="filePath"></param>
         void SeekLogThreaded(string filePath)
         {
             var t = new Thread(() => SeekLog(filePath));
@@ -95,6 +100,10 @@ namespace MagicAssistant
             t.Start();
         }
 
+        /// <summary>
+        /// Seek the log file
+        /// </summary>
+        /// <param name="filePath"></param>
         private void SeekLog(string filePath)
         {
             var initialFileSize = new FileInfo(filePath).Length;
@@ -104,8 +113,6 @@ namespace MagicAssistant
 
             while (true)
             {
-                //try
-                //{
                 var fileSize = new FileInfo(filePath).Length;
                 if (fileSize > lastReadLength)
                 {
@@ -139,11 +146,9 @@ namespace MagicAssistant
                                         if (lines[i][lines[i].Length - 1] != '}')
                                         {
                                             WriteLogText(xaml_top_right, "Messages: " + message_count + ", Errors: " + ++error_count);
-                                            WriteLogText(xaml_log, lines[i]);
-                                            Console.WriteLine(lines[i]);
                                         }
                                         else // Interpret Message
-                                            InterpretGreToClientEventMessageThreaded(lines[i]);
+                                            TryInterpretGreToClientEventMessage(lines[i]);
                                     }
                                 }
                             }
@@ -151,16 +156,29 @@ namespace MagicAssistant
                         }
                     }
                 }
-                //}
-                //catch 
-                //{ 
-
-                //}
             }
         }
 
+        /// <summary>
+        /// Read the test log threaded. Used for testing with old logs
+        /// </summary>
+        /// <param name="filePath"></param>
+        void ReadTestLogThreaded(string filePath)
+        {
+            var t = new Thread(() => ReadTestLog(filePath));
+            t.IsBackground = true;
+            t.Priority = ThreadPriority.Highest;
+            t.Name = "ReadTestLog";
+            t.Start();
+        }
+
+        /// <summary>
+        /// Read the test log. Used for testing with old logs
+        /// </summary>
+        /// <param name="filePath"></param>
         void ReadTestLog(string filePath)
         {
+            Thread.Sleep(5000);
             string line;
             int counter = 0;
             // Read the file and display it line by line.  
@@ -178,82 +196,38 @@ namespace MagicAssistant
                         if (line[line.Length - 1] != '}')
                             WriteLogText(xaml_top_right, "Messages: " + message_count + ", Errors: " + ++error_count);
                         else // Interpret Message
-                            InterpretGreToClientEventMessage(line);
-                        //InterpretGreToClientEventMessageThreaded(line); // threaded casuses the collection to be modifed in foreach loop
+                            TryInterpretGreToClientEventMessage(line);
+                        Thread.Sleep(20);
                     }
                 }
-                //Console.WriteLine(counter++);
+                Console.WriteLine(counter++);
             }
             file.Close();
         }
 
-        private void WriteLogText(System.Windows.Controls.Label label, string text)
-        {
-            Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
-            {
-                label.Content = text;
-            }));
-        }
-        private void WriteLogText(System.Windows.Controls.TextBox textBox, string text)
-        {
-            Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
-            {
-                textBox.Text = text;
-                textBox.ScrollToEnd();
-            }));
-        }
-
-        private void CheckFile(string path)
-        {
-            if (!File.Exists(path))
-            {
-                MessageBox.Show(path + " file does not exists. Application will now close.", "Log file does not exists.", MessageBoxButton.OK, MessageBoxImage.Error);
-                Application.Current.Shutdown();
-            }
-        }
-        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                DragMove();
-            }
-        }
-
-        public void AppendEventText(string text)
-        {
-            Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
-            {
-                while (xaml_events.Document.Blocks.Count > 100)
-                    xaml_events.Document.Blocks.Remove(xaml_events.Document.Blocks.FirstBlock); // Remove First line
-                TextRange tr = new TextRange(xaml_events.Document.ContentEnd, xaml_events.Document.ContentEnd);
-                tr.Text = $"{DateTime.Now.ToString("[HH:mm:ss] ")}{text}{Environment.NewLine}";
-                xaml_events.ScrollToEnd();
-            }));
-        }
-
-        void InterpretGreToClientEventMessageThreaded(string line)
-        {
-            var t = new Thread(() => TryInterpretGreToClientEventMessage(line))
-            {
-                IsBackground = true,
-                Priority = ThreadPriority.Highest,
-                Name = "InterpretGreToClientEventMessage"
-            };
-            t.Start();
-        }
-
+        /// <summary>
+        /// Interpret message with try
+        /// </summary>
+        /// <param name="line"></param>
         public void TryInterpretGreToClientEventMessage(string line)
         {
-            //try
-            //{
-            InterpretGreToClientEventMessage(line);
-            //}
-            //catch (Exception)
-            //{
-            //    error_count++;
-            //    AppendEventText("Could not parse Message");
-            //}
+            try
+            {
+                InterpretGreToClientEventMessage(line);
+                WriteLogText(xaml_json, MainData.SerializeObject(), false);
+            }
+            catch (Exception e)
+            {
+                error_count++;
+                Console.WriteLine(e);
+                AppendEventText("Could not parse Message" + e);
+            }
         }
+
+        /// <summary>
+        /// Interpret Message
+        /// </summary>
+        /// <param name="line"></param>
         public void InterpretGreToClientEventMessage(string line)
         {
             dynamic jsonRecord = jss.Deserialize<dynamic>(line);
@@ -264,6 +238,10 @@ namespace MagicAssistant
                 switch (record.Key)
                 {
                     case "transactionId":
+                        break;
+                    case "requestId":
+                        break;
+                    case "authenticateResponse":
                         break;
                     case "timestamp":
                         break;
@@ -290,6 +268,13 @@ namespace MagicAssistant
                                                                     case "matchID":
                                                                         break;
                                                                     case "gameNumber":
+                                                                        if (MainData.Match.MatchGames.Count < gameInfo.Value)
+                                                                        {
+                                                                            MAGame game = new MAGame();
+                                                                            game.gameName = "Game " + gameInfo.Value;
+                                                                            game.GameSummary.onPlay = false;
+                                                                            MainData.Match.MatchGames.Add(game);
+                                                                        }
                                                                         break;
                                                                     case "stage":
                                                                         gameStage = (EnumGameStage)Enum.Parse(typeof(EnumGameStage), gameInfo.Value, true);
@@ -304,7 +289,8 @@ namespace MagicAssistant
                                                                             case EnumGameStage.GameStage_Play:
                                                                                 break;
                                                                             case EnumGameStage.GameStage_GameOver:
-                                                                                Battlefield.Clear();
+                                                                                MainData.Match.MatchSnapShot.Player.GraveYard.Clear();
+                                                                                MainData.Match.MatchSnapShot.Opponent.GraveYard.Clear();
                                                                                 WriteLogText(xaml_message, "");
                                                                                 WriteLogText(xaml_player, "");
                                                                                 WriteLogText(xaml_opponent, "");
@@ -312,7 +298,6 @@ namespace MagicAssistant
                                                                                 WriteLogText(xaml_gameobjects, "");
                                                                                 WriteLogText(xaml_top_left, "");
                                                                                 gameObjects.Clear();
-
                                                                                 break;
                                                                             default:
                                                                                 break;
@@ -321,27 +306,48 @@ namespace MagicAssistant
                                                                 } // switch (gameInfo.Key)
                                                             } // foreach (var gameInfo in gameStateMessage.Value)
                                                             break;
+                                                        case "turnInfo":
+                                                            foreach (var turnInfo in gameStateMessage.Value)
+                                                            {
+                                                                switch (turnInfo.Key)
+                                                                {
+                                                                    case "phase":
+                                                                        break;
+                                                                    case "step":
+                                                                        break;
+                                                                    case "turnNumber":
+                                                                        if (MainData.Match.MatchGames.Last().GameTurns.Count < turnInfo.Value)
+                                                                        {
+                                                                            MATurn turn = new MATurn();
+                                                                            turn.turnName = "Turn " + turnInfo.Value;
+                                                                            MainData.Match.MatchGames.Last().GameTurns.Add(turn);
+                                                                        }
+                                                                        break;
+                                                                }
+                                                            }
+                                                            break;
                                                         case "players":
                                                             foreach (var player in gameStateMessage.Value)
                                                             {
                                                                 if (player["systemSeatNumber"] == 1)
                                                                 {
-                                                                    //player.TryGetValue("lifeTotal", player_life[0]);
-                                                                    //player.TryGetValue("startingLifeTotal", out player_life[1]);
                                                                     if (player.ContainsKey("lifeTotal"))
-                                                                        player_life[0] = player["lifeTotal"];
-                                                                    player_life[1] = player["startingLifeTotal"];
+                                                                        MainData.Match.MatchSnapShot.Player.lifeTotal = player["lifeTotal"];
+                                                                    if (player.ContainsKey("startingLifeTotal"))
+                                                                        MainData.Match.MatchSnapShot.Player.startingLifeTotal = player["startingLifeTotal"];
                                                                 }
                                                                 else
                                                                 {
-                                                                    //player.TryGetValue("lifeTotal", out player_life[2]);
-                                                                    //player.TryGetValue("startingLifeTotal", out player_life[3]);
                                                                     if (player.ContainsKey("lifeTotal"))
-                                                                        player_life[2] = player["lifeTotal"];
-                                                                    player_life[3] = player["startingLifeTotal"];
+                                                                        MainData.Match.MatchSnapShot.Opponent.lifeTotal = player["lifeTotal"];
+                                                                    if (player.ContainsKey("startingLifeTotal"))
+                                                                        MainData.Match.MatchSnapShot.Opponent.startingLifeTotal = player["startingLifeTotal"];
                                                                 }
                                                             }
-                                                            WriteLogText(xaml_top_left, "Seat 1: " + player_life[0] + " / " + player_life[1] + ", Seat 2: " + player_life[2] + " / " + player_life[3]);
+                                                            WriteLogText(xaml_top_left, "Seat 1: " + MainData.Match.MatchSnapShot.Player.lifeTotal + " / " +
+                                                                MainData.Match.MatchSnapShot.Player.startingLifeTotal + ", Seat 2: " +
+                                                                MainData.Match.MatchSnapShot.Opponent.lifeTotal + " / " +
+                                                                MainData.Match.MatchSnapShot.Opponent.startingLifeTotal);
                                                             break;
 
                                                         case "zones":
@@ -404,7 +410,6 @@ namespace MagicAssistant
                                                             foreach (var gameObject in gameStateMessage.Value)
                                                                 if (!gameObjects.ContainsKey(gameObject["instanceId"]))
                                                                 {
-
                                                                     if (gameObject.ContainsKey("name") && gameObject.ContainsKey("zoneId"))
                                                                     {
                                                                         gameObjects.Add(gameObject["instanceId"], new GameObjectClass(gameObject["type"], gameObject["zoneId"], gameObject["controllerSeatId"],
@@ -483,7 +488,10 @@ namespace MagicAssistant
                                                             {
                                                                 string name = reservedPlayers["playerName"];
                                                                 int seatId = reservedPlayers["systemSeatId"];
-                                                                player_names[seatId - 1] = name;
+                                                                if (seatId == 1)
+                                                                    MainData.Match.MatchSnapShot.Player.name = name;
+                                                                else
+                                                                    MainData.Match.MatchSnapShot.Opponent.name = name;
                                                             }
                                                             break;
                                                     }
@@ -603,6 +611,75 @@ namespace MagicAssistant
             }
         }
 
+        /// <summary>
+        /// Write the text to label
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="text"></param>
+        private void WriteLogText(System.Windows.Controls.Label label, string text)
+        {
+            Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+            {
+                label.Content = text;
+            }));
+        }
+
+        /// <summary>
+        /// Write the text to textbox
+        /// </summary>
+        /// <param name="textBox"></param>
+        /// <param name="text"></param>
+        private void WriteLogText(System.Windows.Controls.TextBox textBox, string text, bool scrollToEnd = true)
+        {
+            Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+            {
+                textBox.Text = text;
+                if (scrollToEnd)
+                    textBox.ScrollToEnd();
+            }));
+        }
+
+        /// <summary>
+        /// Check if file exists
+        /// </summary>
+        /// <param name="path"></param>
+        private void CheckFile(string path)
+        {
+            if (!File.Exists(path))
+            {
+                MessageBox.Show(path + " file does not exists. Application will now close.", "Log file does not exists.", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Shutdown();
+            }
+        }
+
+        /// <summary>
+        /// Mouse down for window drag
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
+        }
+
+        /// <summary>
+        /// Append event text
+        /// </summary>
+        /// <param name="text"></param>
+        public void AppendEventText(string text)
+        {
+            Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+            {
+                while (xaml_events.Document.Blocks.Count > 100)
+                    xaml_events.Document.Blocks.Remove(xaml_events.Document.Blocks.FirstBlock); // Remove First line
+                TextRange tr = new TextRange(xaml_events.Document.ContentEnd, xaml_events.Document.ContentEnd);
+                tr.Text = $"{DateTime.Now.ToString("[HH:mm:ss] ")}{text}{Environment.NewLine}";
+                xaml_events.ScrollToEnd();
+            }));
+        }
 
     }
 }

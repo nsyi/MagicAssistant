@@ -1,12 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 using static MagicAssistant.greTypes;
+using RestSharp;
 
 namespace MagicAssistant
 {
+    [Serializable]
+    public class DataObject
+    {
+        public int ID;
+        public string Name;
+        public MASettings Settings = new MASettings();
+        public MAMatch Match = new MAMatch();
+        public string SerializeObject()
+        {
+            string jsonString = JsonConvert.SerializeObject(this, Formatting.Indented);
+            return jsonString;
+        }
+        public void PostToAPI()
+        {
+            var client = new RestClient("https://api.inresponse.gg/beta/companion/logmatch");
+            client.Timeout = -1;
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("authorizationToken", "4565453");
+            request.AddHeader("Content-Type", "application/json");
+            //"{\r\n    \"token\": \"3965cade-b3ac-4dc7-a564-75d1181464f7\",\r\n    \"user\": 1,\r\n    \"matchlog\":{\"dummylog\":\"dummy log json\"}\r\n  }"
+            string parameter_value = String.Concat("{\"token\":\"3965cade-b3ac-4dc7-a564-75d1181464f7\",\"user\": 1,\"matchlog\":", SerializeObject(), "}");
+            request.AddParameter("application/json", parameter_value, ParameterType.RequestBody);
+            IRestResponse response = client.Execute(request);
+            Console.WriteLine(response.Content);
+        }
+    }
     public class MASettings
     {
         public int General;
@@ -40,21 +65,21 @@ namespace MagicAssistant
     {
         public string gameName;
         public MAGameSummary GameSummary = new MAGameSummary();
-        public List<MAGameTurns> GameTurns = new List<MAGameTurns>();
+        public List<MATurn> GameTurns = new List<MATurn>();
     }
-    public class MAGameTurns
+    public class MATurn
     {
-        public int life;
-        public int damageDealed;
+        public string turnName;
+        public int gainedLife;
+        public int damageDealed; // including creatures
         public int usedMana;
         public int availableMana;
-        public List<GameObjectClass> Deck = new List<GameObjectClass>();
-        public List<GameObjectClass> SidBoard = new List<GameObjectClass>();
-        public List<GameObjectClass> BattleField = new List<GameObjectClass>();
+        
+        // This should be for each player
+        public List<GameObjectClass> BattleField = new List<GameObjectClass>(); // Difference
         public List<GameObjectClass> GraveYard = new List<GameObjectClass>();
         public List<GameObjectClass> Exile = new List<GameObjectClass>();
         public List<GameObjectClass> Hand = new List<GameObjectClass>();
-        public List<GameObjectClass> Playable = new List<GameObjectClass>();
         public List<GameObjectClass> Attacked = new List<GameObjectClass>();
     }
     public class MAGameSummary
@@ -63,7 +88,7 @@ namespace MagicAssistant
         public bool won;
         public List<GameObjectClass> StratingHand = new List<GameObjectClass>();
         public List<GameObjectClass> StartingDeck = new List<GameObjectClass>();
-        public List<GameObjectClass> StartingSidBoard = new List<GameObjectClass>();
+        public List<GameObjectClass> StartingSideBoard = new List<GameObjectClass>();
     }
     public class MAMatchSnapShot
     {
@@ -73,7 +98,8 @@ namespace MagicAssistant
     public class MAPlayer
     {
         public string name;
-        public int life;
+        public int lifeTotal;
+        public int startingLifeTotal;
         public List<GameObjectClass> Deck = new List<GameObjectClass>();
         public List<GameObjectClass> SidBoard = new List<GameObjectClass>();
         public List<GameObjectClass> BattleField = new List<GameObjectClass>();

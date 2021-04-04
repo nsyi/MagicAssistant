@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using RestSharp;
-using RestSharp.Serialization.Json;
 
 namespace MagicAssistant
 {
     public static class Tests
     {
-        public static void SerializationTest()
+        public static string SerializationTest()
         {
             // Serial Test
             DataObject data = new DataObject();
@@ -33,7 +28,8 @@ namespace MagicAssistant
             data.Match.MatchSnapShot.Opponent.name = "opponet name";
 
             string json = data.SerializeObject();
-            APITest(json);
+            return json;
+            //APITest(json);
         }
         public static void APITest(string log)
         {

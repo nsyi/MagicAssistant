@@ -139,25 +139,25 @@ namespace MagicAssistant
             }));
         }
 
-        private void ReadTest(string path)
-        {
-            var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        //private void ReadTest(string path)
+        //{
+        //    var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
 
-            for (offset = 1; offset <= fs.Length; offset++)
-            {
-                fs.Seek(-offset, SeekOrigin.End);
-                Console.Write(Convert.ToChar(fs.ReadByte()));
-            }
-            Console.WriteLine();
+        //    for (offset = 1; offset <= fs.Length; offset++)
+        //    {
+        //        fs.Seek(-offset, SeekOrigin.End);
+        //        Console.Write(Convert.ToChar(fs.ReadByte()));
+        //    }
+        //    Console.WriteLine();
 
-            fs.Seek(20, SeekOrigin.Begin);
+        //    fs.Seek(20, SeekOrigin.Begin);
 
-            while ((nextByte = fs.ReadByte()) > 0)
-            {
-                Console.Write(Convert.ToChar(nextByte));
-            }
-            Console.WriteLine();
-        }
+        //    while ((nextByte = fs.ReadByte()) > 0)
+        //    {
+        //        Console.Write(Convert.ToChar(nextByte));
+        //    }
+        //    Console.WriteLine();
+        //}
 
         private void WriteLogText(System.Windows.Controls.TextBlock textBlock, string text)
         {

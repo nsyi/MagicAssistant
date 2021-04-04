@@ -5,11 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MagicAssistant"
         mc:Ignorable="d"
-        Title="Magic Assist" Height="684" Width="970.375" Opacity="0.5" 
+        Title="Magic Assist" Height="684" Width="900" Opacity="0.5" 
         AllowsTransparency="True" WindowStyle="None" MouseDown="Window_MouseDown" 
         Background="Black"
         Topmost="True"
         ResizeMode="CanResize"
+        FontSize="10"
         >
     <DockPanel LastChildFill="True">
         <!--Top-->
@@ -39,7 +40,8 @@
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="180"/>
-                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition Width="150"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -70,6 +72,10 @@
                 <TextBox x:Name="xaml_opponent" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
             </DockPanel>
             <DockPanel Grid.Column="2" Grid.RowSpan="4" LastChildFill="True">
+                <Label Content="Json" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_json" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            </DockPanel>
+            <DockPanel Grid.Column="3" Grid.RowSpan="4" LastChildFill="True">
                 <Label Content="Log Message" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
                 <TextBox x:Name="xaml_log" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
             </DockPanel>
