@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
+using RestSharp.Serialization.Json;
 
 namespace MagicAssistant
 {
@@ -18,13 +18,9 @@ namespace MagicAssistant
 
         public string SerializeObject()
         {
-            XmlSerializer xmlSerializer = new XmlSerializer(this.GetType());
-
-            using (StringWriter textWriter = new StringWriter())
-            {
-                xmlSerializer.Serialize(textWriter, this);
-                return textWriter.ToString();
-            }
+            JsonSerializer serializer = new JsonSerializer();
+            string jsonString = serializer.Serialize(this);
+            return jsonString;
         }
     }
 }

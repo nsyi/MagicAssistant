@@ -53,31 +53,17 @@ namespace MagicAssistant
 
             //InterpretGreToClientEventMessage(play);
 
-            // Serial Test
-            DataObject data = new DataObject();
-            data.ID = 1;
-            data.Name = ".Net";
-            data.Settings.General = 0;
-            data.Match.MatchSummary.Player = "player name";
+            //Tests.SerializationTest();
 
-            MAGame game1 = new MAGame();
-            game1.gameName = "game 1";
-            game1.GameSummary.onPlay = false;
-            data.Match.MatchGames.Add(game1);
+            //Tests.APITest("\"test\" : \"test\""); // Test the api
 
-            MAGame game2 = new MAGame();
-            game2.gameName = "game 2";
-            game2.GameSummary.onPlay = true;
-            data.Match.MatchGames.Add(game2);
-
-            data.Match.MatchSnapShot.Player.name = "player name";
-            data.Match.MatchSnapShot.Opponent.name = "opponet name";
-
-            string result = data.SerializeObject();
-            Console.WriteLine(result);
+            //string test_log = "C:\\Users\\nsyig\\Documents\\My documents\\UW\\J017 - MTGA\\Player\\Player.log";
+            //ReadTestLog(test_log);
 
             SeekLogThreaded(log_path);
         }
+
+
         dynamic ReadDataBase(string file, out Dictionary<int, object> dataBaseCards)
         {
             if (File.Exists(file))
@@ -118,52 +104,87 @@ namespace MagicAssistant
 
             while (true)
             {
-                try
+                //try
+                //{
+                var fileSize = new FileInfo(filePath).Length;
+                if (fileSize > lastReadLength)
                 {
-                    var fileSize = new FileInfo(filePath).Length;
-                    if (fileSize > lastReadLength)
+                    using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
-                        using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        fs.Seek(lastReadLength, SeekOrigin.Begin);
+                        var buffer = new byte[1024];
+                        while (true)
                         {
-                            fs.Seek(lastReadLength, SeekOrigin.Begin);
-                            var buffer = new byte[1024];
-                            while (true)
+                            var bytesRead = fs.Read(buffer, 0, buffer.Length);
+                            lastReadLength += bytesRead;
+                            if (bytesRead == 0)
+                                break;
+                            var text = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                            string[] stringSeparators = new string[] { "\r\n" };
+                            string[] lines = text.Split(stringSeparators, StringSplitOptions.None);
+
+                            if (text_prev != null)
+                                lines[0] = string.Concat(text_prev, lines[0]);
+
+                            for (int i = 0; i < lines.Length - 1; i++)
                             {
-                                var bytesRead = fs.Read(buffer, 0, buffer.Length);
-                                lastReadLength += bytesRead;
-                                if (bytesRead == 0)
-                                    break;
-                                var text = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                                string[] stringSeparators = new string[] { "\r\n" };
-                                string[] lines = text.Split(stringSeparators, StringSplitOptions.None);
-
-                                if (text_prev != null)
-                                    lines[0] = string.Concat(text_prev, lines[0]);
-
-                                for (int i = 0; i < lines.Length - 1; i++)
+                                if (lines[i].Length > 0 && lines[i][0] == '{') // If it is the data line we need it starts with {
                                 {
-                                    if (lines[i][0] == '{') // If it is the data line wee need it starts with {
+                                    if (lines[i].Length > 18 && lines[i].Substring(0, 18) == "{ \"transactionId\":") // make sure it is the data line
                                     {
-                                        if (lines[i].Substring(0, 18) == "{ \"transactionId\":") // make sure it is the data line
+                                        // Log message
+                                        WriteLogText(xaml_top_right, "Messages: " + ++message_count + ", Errors: " + error_count);
+                                        WriteLogText(xaml_log, lines[i]);
+                                        // Log Error
+                                        if (lines[i][lines[i].Length - 1] != '}')
                                         {
-                                            // Log message
-                                            WriteLogText(xaml_top_right, "Messages: " + ++message_count + ", Errors: " + error_count);
+                                            WriteLogText(xaml_top_right, "Messages: " + message_count + ", Errors: " + ++error_count);
                                             WriteLogText(xaml_log, lines[i]);
-                                            // Log Error
-                                            if (lines[i][lines[i].Length - 1] != '}')
-                                                WriteLogText(xaml_top_right, "Messages: " + message_count + ", Errors: " + ++error_count);
-                                            else // Interpret Message
-                                                InterpretGreToClientEventMessageThreaded(lines[i]);
+                                            Console.WriteLine(lines[i]);
                                         }
+                                        else // Interpret Message
+                                            InterpretGreToClientEventMessageThreaded(lines[i]);
                                     }
                                 }
-                                text_prev = lines[lines.Length - 1];
                             }
+                            text_prev = lines[lines.Length - 1];
                         }
                     }
                 }
-                catch { }
+                //}
+                //catch 
+                //{ 
+
+                //}
             }
+        }
+
+        void ReadTestLog(string filePath)
+        {
+            string line;
+            int counter = 0;
+            // Read the file and display it line by line.  
+            StreamReader file = new StreamReader(filePath);
+            while ((line = file.ReadLine()) != null)
+            {
+                if (line.Length > 0 && line[0] == '{') // If it is the data line we need it starts with {
+                {
+                    if (line.Length > 18 && line.Substring(0, 18) == "{ \"transactionId\":") // make sure it is the data line
+                    {
+                        // Log message
+                        WriteLogText(xaml_top_right, "Messages: " + ++message_count + ", Errors: " + error_count);
+                        WriteLogText(xaml_log, line);
+                        // Log Error
+                        if (line[line.Length - 1] != '}')
+                            WriteLogText(xaml_top_right, "Messages: " + message_count + ", Errors: " + ++error_count);
+                        else // Interpret Message
+                            InterpretGreToClientEventMessage(line);
+                        //InterpretGreToClientEventMessageThreaded(line); // threaded casuses the collection to be modifed in foreach loop
+                    }
+                }
+                //Console.WriteLine(counter++);
+            }
+            file.Close();
         }
 
         private void WriteLogText(System.Windows.Controls.Label label, string text)
@@ -223,15 +244,15 @@ namespace MagicAssistant
 
         public void TryInterpretGreToClientEventMessage(string line)
         {
-            try
-            {
-                InterpretGreToClientEventMessage(line);
-            }
-            catch (Exception)
-            {
-                error_count++;
-                AppendEventText("Could not parse Message");
-            }
+            //try
+            //{
+            InterpretGreToClientEventMessage(line);
+            //}
+            //catch (Exception)
+            //{
+            //    error_count++;
+            //    AppendEventText("Could not parse Message");
+            //}
         }
         public void InterpretGreToClientEventMessage(string line)
         {
@@ -305,12 +326,18 @@ namespace MagicAssistant
                                                             {
                                                                 if (player["systemSeatNumber"] == 1)
                                                                 {
-                                                                    player_life[0] = player["lifeTotal"];
+                                                                    //player.TryGetValue("lifeTotal", player_life[0]);
+                                                                    //player.TryGetValue("startingLifeTotal", out player_life[1]);
+                                                                    if (player.ContainsKey("lifeTotal"))
+                                                                        player_life[0] = player["lifeTotal"];
                                                                     player_life[1] = player["startingLifeTotal"];
                                                                 }
                                                                 else
                                                                 {
-                                                                    player_life[2] = player["lifeTotal"];
+                                                                    //player.TryGetValue("lifeTotal", out player_life[2]);
+                                                                    //player.TryGetValue("startingLifeTotal", out player_life[3]);
+                                                                    if (player.ContainsKey("lifeTotal"))
+                                                                        player_life[2] = player["lifeTotal"];
                                                                     player_life[3] = player["startingLifeTotal"];
                                                                 }
                                                             }
@@ -342,7 +369,8 @@ namespace MagicAssistant
                                                                             foreach (var objectInstanceIds in zone["objectInstanceIds"])
                                                                             {
                                                                                 list = list + ", " + objectInstanceIds;
-                                                                                Battlefield.Add(objectInstanceIds, objectInstanceIds);
+                                                                                if (!Battlefield.ContainsKey(objectInstanceIds))
+                                                                                    Battlefield.Add(objectInstanceIds, objectInstanceIds);
                                                                             }
                                                                             AppendEventText("ZoneType_Battlefield" + list);
                                                                         }
@@ -375,8 +403,19 @@ namespace MagicAssistant
                                                         case "gameObjects":
                                                             foreach (var gameObject in gameStateMessage.Value)
                                                                 if (!gameObjects.ContainsKey(gameObject["instanceId"]))
-                                                                    gameObjects.Add(gameObject["instanceId"], new GameObjectClass(gameObject["type"], gameObject["zoneId"], gameObject["controllerSeatId"],
-                                                                    gameObject["grpId"], gameObject["instanceId"], gameObject["ownerSeatId"], gameObject["visibility"], gameObject["name"]));
+                                                                {
+
+                                                                    if (gameObject.ContainsKey("name") && gameObject.ContainsKey("zoneId"))
+                                                                    {
+                                                                        gameObjects.Add(gameObject["instanceId"], new GameObjectClass(gameObject["type"], gameObject["zoneId"], gameObject["controllerSeatId"],
+                                                                            gameObject["grpId"], gameObject["instanceId"], gameObject["ownerSeatId"], gameObject["visibility"], gameObject["name"]));
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        gameObjects.Add(gameObject["instanceId"], new GameObjectClass(gameObject["type"], gameObject["controllerSeatId"],
+                                                                            gameObject["grpId"], gameObject["instanceId"], gameObject["ownerSeatId"], gameObject["visibility"]));
+                                                                    }
+                                                                }
                                                             //AppendEventText(cards);
                                                             break;
                                                         case "annotations":
@@ -388,12 +427,11 @@ namespace MagicAssistant
                                                                 ActionClass actionItem = new ActionClass();
                                                                 switch (act["action"]["actionType"])
                                                                 {
-                                                                    case "ActionType_Cast":
-                                                                    case "ActionType_Play":
+                                                                    case EnumActionType.ActionType_Cast:
+                                                                    case EnumActionType.ActionType_Play:
                                                                         actionItem = new ActionClass(act["seatId"], act["action"]["actionType"], act["action"]["instanceId"]);
                                                                         break;
-                                                                    case "ActionType_Activate":
-                                                                    default:
+                                                                    case EnumActionType.ActionType_Activate:
                                                                         actionItem = new ActionClass(act["seatId"], act["action"]["actionType"], act["action"]["sourceId"]);
                                                                         break;
                                                                 }
@@ -564,5 +602,7 @@ namespace MagicAssistant
                 WriteLogText(xaml_gameobjects, objects);
             }
         }
+
+
     }
 }

@@ -53,15 +53,16 @@ namespace MagicAssistant
 
         public enum GameObjectType
         {
-            GAMEOBJECTTYPE_NONE = 0,
-            GAMEOBJECTTYPE_CARD = 1,
-            GAMEOBJECTTYPE_TOKEN = 2,
-            GAMEOBJECTTYPE_ABILITY = 3,
-            GAMEOBJECTTYPE_EMBLEM = 4,
-            GAMEOBJECTTYPE_SPLITCARD = 5,
-            GAMEOBJECTTYPE_SPLITLEFT = 6,
-            GAMEOBJECTTYPE_SPLITRIGHT = 7,
-            GAMEOBJECTTYPE_REVEALEDCARD = 8
+            GameObjectType_None = 0,
+            GameObjectType_Card = 1,
+            GameObjectType_Token = 2,
+            GameObjectType_Ability = 3,
+            GameObjectType_Emblem = 4,
+            GameObjectType_SplitCard = 5,
+            GameObjectType_SplitLeft = 6,
+            GameObjectType_SplitRight = 7,
+            GameObjectType_RevealedCard = 8,
+            GameObjectType_MDFCBack = 9
         };
 
         public class GameObjectClass
@@ -74,7 +75,10 @@ namespace MagicAssistant
             public int ownerSeatId;
             public EnumVisibility visibility;
             public int name;
+            public GameObjectClass()
+            {
 
+            }
             public GameObjectClass(string type, int zoneId, int controllerSeatId, int grpId, int instanceId, int ownerSeatId, string visibility, int name)
             {
                 this.type = (GameObjectType)Enum.Parse(typeof(GameObjectType), type, true);
@@ -85,6 +89,35 @@ namespace MagicAssistant
                 this.ownerSeatId = ownerSeatId;
                 this.visibility = (EnumVisibility)Enum.Parse(typeof(EnumVisibility), visibility, true);
                 this.name = name;
+            }
+            public GameObjectClass(string type, int controllerSeatId, int grpId, int instanceId, int ownerSeatId, string visibility, int name)
+            {
+                this.type = (GameObjectType)Enum.Parse(typeof(GameObjectType), type, true);
+                this.controllerSeatId = controllerSeatId;
+                this.grpId = grpId;
+                this.instanceId = instanceId;
+                this.ownerSeatId = ownerSeatId;
+                this.visibility = (EnumVisibility)Enum.Parse(typeof(EnumVisibility), visibility, true);
+                this.name = name;
+            }
+            public GameObjectClass(string type, int zoneId, int controllerSeatId, int grpId, int instanceId, int ownerSeatId, string visibility)
+            {
+                this.type = (GameObjectType)Enum.Parse(typeof(GameObjectType), type, true);
+                this.zoneId = zoneId;
+                this.controllerSeatId = controllerSeatId;
+                this.grpId = grpId;
+                this.instanceId = instanceId;
+                this.ownerSeatId = ownerSeatId;
+                this.visibility = (EnumVisibility)Enum.Parse(typeof(EnumVisibility), visibility, true);
+            }
+            public GameObjectClass(string type, int controllerSeatId, int grpId, int instanceId, int ownerSeatId, string visibility)
+            {
+                this.type = (GameObjectType)Enum.Parse(typeof(GameObjectType), type, true);
+                this.controllerSeatId = controllerSeatId;
+                this.grpId = grpId;
+                this.instanceId = instanceId;
+                this.ownerSeatId = ownerSeatId;
+                this.visibility = (EnumVisibility)Enum.Parse(typeof(EnumVisibility), visibility, true);
             }
         }
         public class ActionClass
