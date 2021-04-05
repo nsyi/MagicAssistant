@@ -24,15 +24,16 @@ namespace MagicAssistant
         readonly string user_path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\AppData\\LocalLow\\Wizards Of The Coast\\MTGA\\";
         readonly string data_base_file = AppDomain.CurrentDomain.BaseDirectory + "\\database.json";
         readonly string log_file = "player.log";
-        string test_log = "C:\\Users\\nsyig\\Documents\\My documents\\UW\\J017 - MTGA\\Player\\Player.log";
+        readonly string test_log = "C:\\Users\\nsyig\\Documents\\My documents\\UW\\J017 - MTGA\\Player\\Player.log";
 
         JavaScriptSerializer jss = new JavaScriptSerializer();
         readonly dynamic dataBaseJson; // Database of cards
-        Dictionary<int, dynamic> dataBaseCards;
+        readonly Dictionary<int, dynamic> dataBaseCards;
 
         public DataObject MainData = new DataObject(); // Main data file 
 
         EnumGameStage gameStage = EnumGameStage.GameStage_None;
+
         Dictionary<int, GameObjectClass> gameObjects = new Dictionary<int, GameObjectClass>();
 
         Dictionary<int, int> Battlefield = new Dictionary<int, int>();
@@ -214,7 +215,7 @@ namespace MagicAssistant
             try
             {
                 InterpretGreToClientEventMessage(line);
-                WriteLogText(xaml_json, MainData.SerializeObject(), false);
+                WriteLogText(xaml_json, MainData.SerializeObject(), true);
             }
             catch (Exception e)
             {
@@ -233,6 +234,7 @@ namespace MagicAssistant
             dynamic jsonRecord = jss.Deserialize<dynamic>(line);
             Dictionary<int, ActionClass> actions1 = new Dictionary<int, ActionClass>();
             Dictionary<int, ActionClass> actions2 = new Dictionary<int, ActionClass>();
+            string timeStamp = "";
             foreach (var record in jsonRecord)
             {
                 switch (record.Key)
@@ -244,6 +246,7 @@ namespace MagicAssistant
                     case "authenticateResponse":
                         break;
                     case "timestamp":
+                        timeStamp = record.Value;
                         break;
                     case "greToClientEvent":
                         foreach (var greToClientEvent in record.Value)
@@ -260,6 +263,17 @@ namespace MagicAssistant
                                                 {
                                                     switch (gameStateMessage.Key)
                                                     {
+                                                        case "type":
+                                                            switch (gameStateMessage.Value)
+                                                            {
+                                                                case "GameStateType_Diff":
+                                                                    // At turns afterwards the first turn
+                                                                    break;
+                                                                case "GameStateType_Full":
+                                                                    // At the beginning of each game
+                                                                    break;
+                                                            }
+                                                            break;
                                                         case "gameInfo":
                                                             foreach (var gameInfo in gameStateMessage.Value)
                                                             {
@@ -349,7 +363,6 @@ namespace MagicAssistant
                                                                 MainData.Match.MatchSnapShot.Opponent.lifeTotal + " / " +
                                                                 MainData.Match.MatchSnapShot.Opponent.startingLifeTotal);
                                                             break;
-
                                                         case "zones":
                                                             foreach (var zone in gameStateMessage.Value)
                                                             {
@@ -424,7 +437,6 @@ namespace MagicAssistant
                                                             //AppendEventText(cards);
                                                             break;
                                                         case "annotations":
-
                                                             break;
                                                         case "actions":
                                                             foreach (var act in gameStateMessage.Value)
@@ -471,6 +483,7 @@ namespace MagicAssistant
                     case "matchGameRoomStateChangedEvent":
                         foreach (var matchGameRoomStateChangedEvent in record.Value)
                         {
+                            string eventId = "";
                             switch (matchGameRoomStateChangedEvent.Key)
                             {
                                 case "gameRoomInfo":
@@ -483,6 +496,9 @@ namespace MagicAssistant
                                                 {
                                                     switch (gameRoomConfig.Key)
                                                     {
+                                                        case "eventId":
+                                                            eventId = gameRoomConfig.Value;
+                                                            break;
                                                         case "reservedPlayers":
                                                             foreach (var reservedPlayers in gameRoomConfig.Value)
                                                             {
@@ -492,6 +508,60 @@ namespace MagicAssistant
                                                                     MainData.Match.MatchSnapShot.Player.name = name;
                                                                 else
                                                                     MainData.Match.MatchSnapShot.Opponent.name = name;
+                                                            }
+                                                            break;
+                                                    }
+                                                }
+                                                break;
+                                            case "stateType":
+                                                switch (gameRoomInfo.Value)
+                                                {
+                                                    case "MatchGameRoomStateType_MatchCompleted":
+                                                        MainData.Match.MatchSummary.EndDateTime = timeStamp; // set end time
+                                                        // Send the data to the api
+                                                        //MainData.PostToAPI();
+                                                        AppendEventText("Data Sent to API");
+                                                        break;
+                                                    case "MatchGameRoomStateType_Playing":
+                                                        MainData.Match.MatchSummary.StartDateTime = timeStamp; // set start time
+                                                        MainData.Match.MatchSummary.Format = eventId; // set the match format
+
+                                                        break;
+                                                }
+                                                break;
+                                            case "players":
+
+                                                break;
+                                            case "finalMatchResult":
+                                                foreach (var finalMatchResult in gameRoomInfo.Value)
+                                                {
+                                                    switch (finalMatchResult.Key)
+                                                    {
+                                                        case "matchId":
+
+                                                            break;
+                                                        case "matchCompletedReason":
+
+                                                            break;
+                                                        case "resultList":
+                                                            foreach (var resultList in finalMatchResult.Value)
+                                                            {
+                                                                foreach (var result in resultList)
+                                                                {
+                                                                    switch (result.Key)
+                                                                    {
+                                                                        case "scope":
+                                                                            //MatchScope_Game
+                                                                            //MatchScope_Match
+                                                                            break;
+                                                                        case "result":
+                                                                            //ResultType_WinLoss
+                                                                            break;
+                                                                        case "winningTeamId":
+                                                                            // 1 2
+                                                                            break;
+                                                                    }
+                                                                }
                                                             }
                                                             break;
                                                     }
@@ -513,7 +583,6 @@ namespace MagicAssistant
             {
                 if (action.Value.actionType != EnumActionType.ActionType_Activate)
                 {
-
                     string card_name = "";
                     if (gameObjects.ContainsKey(action.Value.instanceId))
                     {
@@ -578,6 +647,7 @@ namespace MagicAssistant
                 if (Battlefield.ContainsKey(action.Value.instanceId))
                     Battlefield.Remove(action.Value.instanceId);
             }
+
             // Opponent cards from battlefield
             foreach (var card in Battlefield)
             {
@@ -585,10 +655,17 @@ namespace MagicAssistant
                 if (gameObjects.ContainsKey(card.Key))
                 {
                     GameObjectClass go = gameObjects[card.Key];
-                    if (dataBaseCards.ContainsKey(go.name))
-                        card_name = dataBaseCards[go.name]["name"];
+
                     if (gameObjects[card.Key].controllerSeatId == 2)
-                        actions = string.Concat(actions, card_name, ", ", card.Key, "\r\n");
+                    {
+                        if (dataBaseCards.ContainsKey(go.name))
+                        {
+                            card_name = dataBaseCards[go.name]["name"];
+                            actions = string.Concat(actions, card.Key, ", (", card_name, ")","\r\n");
+                        }
+                        else
+                            actions = string.Concat(actions, card.Key, "\r\n");
+                    }
                 }
             }
 
@@ -601,14 +678,35 @@ namespace MagicAssistant
             {
                 string card_name = "";
                 if (dataBaseCards.ContainsKey(go.Value.name))
+                {
                     card_name = dataBaseCards[go.Value.name]["name"];
-                objects = string.Concat(objects, card_name, ", ", go.Key, ", ", go.Value.name, "\r\n");
+                    objects = string.Concat(objects, go.Key, ", ", go.Value.name, ", (", card_name, ")","\r\n");
+                }
+                else
+                    objects = string.Concat(objects, go.Key, ", ", go.Value.name, "\r\n");
             }
 
             if (actions != "")
             {
                 WriteLogText(xaml_gameobjects, objects);
             }
+
+
+            // Snapshot based on gameObjects
+            MainData.Match.MatchSnapShot.Player.BattleField.Clear();
+            MainData.Match.MatchSnapShot.Opponent.BattleField.Clear();
+            foreach (KeyValuePair<int, GameObjectClass> go in gameObjects)
+            {
+                if (go.Value.controllerSeatId == 1)
+                {
+                    MainData.Match.MatchSnapShot.Player.BattleField.Add(go.Value);
+                }
+                else
+                {
+                    MainData.Match.MatchSnapShot.Opponent.BattleField.Add(go.Value);
+                }
+            }
+
         }
 
         /// <summary>
