@@ -10,7 +10,7 @@
         Background="Black"
         Topmost="True"
         ResizeMode="CanResize"
-        FontSize="10"
+        FontSize="9"
         >
     <DockPanel LastChildFill="True">
         <!--Top-->
@@ -39,8 +39,10 @@
         <!--Middle content-->
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="180"/>
-                <ColumnDefinition Width="130"/>
+                <ColumnDefinition Width="155"/>
+                <ColumnDefinition Width="155"/>
+                <ColumnDefinition Width="155"/>
+                <ColumnDefinition Width="155"/>
                 <ColumnDefinition Width="150"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -59,23 +61,50 @@
                 <Label Content="Game Objects" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
                 <TextBox x:Name="xaml_gameobjects" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow"/>
             </DockPanel>
-            <DockPanel Grid.Column="1" LastChildFill="True">
-                <Label Content="Player Hand" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
-                <TextBox x:Name="xaml_player_hand" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            <DockPanel Grid.Column="1" Grid.Row="0" Grid.RowSpan="4" LastChildFill="True">
+                <Label x:Name="xaml_pl_lib_title" Content="Player Library" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_pl_lib" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
             </DockPanel>
-            <DockPanel Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" LastChildFill="True">
-                <Label Content="Player Cards" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
-                <TextBox x:Name="xaml_player" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            <!--Player-->
+            <DockPanel Grid.Column="2" LastChildFill="True">
+                <Label x:Name="xaml_pl_hd_title" Content="Player Hand" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_pl_hd" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
             </DockPanel>
-            <DockPanel Grid.Column="1" Grid.Row="3" LastChildFill="True">
-                <Label Content="Opponent Cards" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
-                <TextBox x:Name="xaml_opponent" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            <DockPanel Grid.Column="2" Grid.Row="1" LastChildFill="True" Grid.RowSpan="1">
+                <Label x:Name="xaml_pl_bf_title" Content="Player BattleField" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_pl_bf" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
             </DockPanel>
-            <DockPanel Grid.Column="2" Grid.RowSpan="4" LastChildFill="True">
+            <DockPanel Grid.Column="2" Grid.Row="2" LastChildFill="True" Grid.RowSpan="1">
+                <Label x:Name="xaml_pl_gy_title" Content="Player GraveYard" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_pl_gy" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            </DockPanel>
+            <DockPanel Grid.Column="2" Grid.Row="3" LastChildFill="True" Grid.RowSpan="1">
+                <Label x:Name="xaml_pl_ex_title" Content="Player Exile" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_pl_ex" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            </DockPanel>
+            <!--Opponent-->
+            <DockPanel Grid.Column="3" LastChildFill="True">
+                <Label x:Name="xaml_op_hd_title" Content="Opponent Hand" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_op_hd" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            </DockPanel>
+            <DockPanel Grid.Column="3" Grid.Row="1" LastChildFill="True" Grid.RowSpan="1">
+                <Label x:Name="xaml_op_bf_title" Content="Opponent BattleField" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_op_bf" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            </DockPanel>
+            <DockPanel Grid.Column="3" Grid.Row="2" LastChildFill="True" Grid.RowSpan="1">
+                <Label x:Name="xaml_op_gy_title" Content="Opponent GraveYard" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_op_gy" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            </DockPanel>
+            <DockPanel Grid.Column="3" Grid.Row="3" LastChildFill="True" Grid.RowSpan="1">
+                <Label x:Name="xaml_op_ex_title" Content="Opponent Exile" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <TextBox x:Name="xaml_op_ex" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
+            </DockPanel>
+            
+            <DockPanel Grid.Column="4" Grid.RowSpan="4" LastChildFill="True">
                 <Label Content="Json" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
                 <TextBox x:Name="xaml_json" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
             </DockPanel>
-            <DockPanel Grid.Column="3" Grid.RowSpan="4" LastChildFill="True">
+            <DockPanel Grid.Column="5" Grid.RowSpan="4" LastChildFill="True">
                 <Label Content="Log Message" Foreground="White" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
                 <TextBox x:Name="xaml_log" Background="Transparent" Foreground="White" TextWrapping="WrapWithOverflow" />
             </DockPanel>

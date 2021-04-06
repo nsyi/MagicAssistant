@@ -51,7 +51,7 @@ namespace MagicAssistant
             VISIBILITY_HIDDEN = 3
         };
 
-        public enum GameObjectType
+        public enum EnumGameObjectType
         {
             GameObjectType_None = 0,
             GameObjectType_Card = 1,
@@ -64,10 +64,30 @@ namespace MagicAssistant
             GameObjectType_RevealedCard = 8,
             GameObjectType_MDFCBack = 9
         };
+        /// <summary>
+        /// \src\background\messages_pb.js line 81463
+        /// </summary>
+        public enum EnumZoneType
+        {
+            ZONETYPE_NONE = 0,
+            ZONETYPE_LIBRARY = 1,
+            ZONETYPE_HAND = 2,
+            ZONETYPE_BATTLEFIELD = 3,
+            ZONETYPE_STACK = 4,
+            ZONETYPE_GRAVEYARD = 5,
+            ZONETYPE_EXILE = 6,
+            ZONETYPE_COMMAND = 7,
+            ZONETYPE_REVEALED = 8,
+            ZONETYPE_LIMBO = 9,
+            ZONETYPE_SIDEBOARD = 10,
+            ZONETYPE_PENDING = 11,
+            ZONETYPE_PHASEDOUT = 12,
+            ZoneType_Suppressed = 13,
+        }
 
         public class GameObjectClass
         {
-            public GameObjectType type;
+            public EnumGameObjectType type;
             public int zoneId;
             public int controllerSeatId;
             public int grpId;
@@ -79,9 +99,13 @@ namespace MagicAssistant
             {
 
             }
+            public GameObjectClass(int zoneId)
+            {
+                this.zoneId = zoneId;
+            }
             public GameObjectClass(string type, int zoneId, int controllerSeatId, int grpId, int instanceId, int ownerSeatId, string visibility, int name)
             {
-                this.type = (GameObjectType)Enum.Parse(typeof(GameObjectType), type, true);
+                this.type = (EnumGameObjectType)Enum.Parse(typeof(EnumGameObjectType), type, true);
                 this.zoneId = zoneId;
                 this.controllerSeatId = controllerSeatId;
                 this.grpId = grpId;
@@ -92,7 +116,7 @@ namespace MagicAssistant
             }
             public GameObjectClass(string type, int controllerSeatId, int grpId, int instanceId, int ownerSeatId, string visibility, int name)
             {
-                this.type = (GameObjectType)Enum.Parse(typeof(GameObjectType), type, true);
+                this.type = (EnumGameObjectType)Enum.Parse(typeof(EnumGameObjectType), type, true);
                 this.controllerSeatId = controllerSeatId;
                 this.grpId = grpId;
                 this.instanceId = instanceId;
@@ -102,7 +126,7 @@ namespace MagicAssistant
             }
             public GameObjectClass(string type, int zoneId, int controllerSeatId, int grpId, int instanceId, int ownerSeatId, string visibility)
             {
-                this.type = (GameObjectType)Enum.Parse(typeof(GameObjectType), type, true);
+                this.type = (EnumGameObjectType)Enum.Parse(typeof(EnumGameObjectType), type, true);
                 this.zoneId = zoneId;
                 this.controllerSeatId = controllerSeatId;
                 this.grpId = grpId;
@@ -112,7 +136,7 @@ namespace MagicAssistant
             }
             public GameObjectClass(string type, int controllerSeatId, int grpId, int instanceId, int ownerSeatId, string visibility)
             {
-                this.type = (GameObjectType)Enum.Parse(typeof(GameObjectType), type, true);
+                this.type = (EnumGameObjectType)Enum.Parse(typeof(EnumGameObjectType), type, true);
                 this.controllerSeatId = controllerSeatId;
                 this.grpId = grpId;
                 this.instanceId = instanceId;
@@ -132,6 +156,18 @@ namespace MagicAssistant
                 this.actionType = (EnumActionType)Enum.Parse(typeof(EnumActionType), actionType, true);
                 this.instanceId = instanceId;
             }
+        }
+        /// <summary>
+        /// From \src\types\greInterpreter.ts line 388
+        /// </summary>
+        public class ZoneClass
+        {
+            public int zoneId;
+            public EnumZoneType type;
+            public EnumVisibility visibility;
+            public int ownerSeatId;
+            public List<int> objectInstanceIds = new List<int>();
+            public List<int> viewers = new List<int>();
         }
     }
 }

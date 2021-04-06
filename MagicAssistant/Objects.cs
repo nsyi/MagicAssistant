@@ -100,8 +100,8 @@ namespace MagicAssistant
         public string name;
         public int lifeTotal;
         public int startingLifeTotal;
-        public List<GameObjectClass> Deck = new List<GameObjectClass>();
-        public List<GameObjectClass> SidBoard = new List<GameObjectClass>();
+        public List<GameObjectClass> Library = new List<GameObjectClass>();
+        public List<GameObjectClass> SideBoard = new List<GameObjectClass>();
         public List<GameObjectClass> BattleField = new List<GameObjectClass>();
         public List<GameObjectClass> GraveYard = new List<GameObjectClass>();
         public List<GameObjectClass> Exile = new List<GameObjectClass>();
